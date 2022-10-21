@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Ksense Project</title>
+        <style>
+            h1,h2,h3,h4{
+                margin-top:0;
+                margin-bottom:0;
+            }
+            table{
+                width:98%;
+                border-collapse:collapse;
+            }
+            table, td, th{
+                border: 1px solid black;
+            }
+            tr:nth-child(even){
+                background-color:rgba(0,0,0,0.05);
+            }
+            th{
+                background-color:rgba(0,0,0,0.2);
+            }
+            #usersTable tr:hover{
+                background-color:Khaki;
+            }
+            #usersCard, #postsCard{
+                display:inline-block;
+                width:48%;
+                vertical-align: top;
+                overflow:hidden;
+            }
+        </style>
+        <script>
+            "use strict";
+
+            let jsonData;
+
+            function Initiate(){
+                InitializeUsers();
+                InitializePosts();
+                FetchUsers();
+            }
+
+            function InitializeUsers(){
+                let html="<td colspan='4'>No users.</td>";
+                document.getElementById("usersTable").innerHTML=html;
+                return;
+            }
+            function InitializePosts(){
+                let html="<td colspan='4'>No posts. Select a user.</td>";
+                document.getElementById("postsTable").innerHTML=html;
+                return;
+            }
+
+            function FetchUsers(){
+                fetch('https://jsonplaceholder.typicode.com/users/')
+                    .then(response => response.json())
+                    .then(json => RenderUsers(json));
+                ;
+            }
+            function RenderUsers(json){
+                jsonData = json;
+
+                let html = "";
+                if(json){
+                    if(json.length);// more than one
+                    else json = new Array(json);// just one
+                }else{// no data
+                    html="<td>No users</td>";
+                    document.getElementById("usersTable").innerHTML=html;
+                    return;
+                }
+                for(let i=0;i<json.length;i++){
+                    let user = json[i];
+                    html+="<tr>";
+                    html+="<td>"+user.id+"</td>";
+                    html+="<td>"+user.name+"</td>";
+                    html+="<td>"+user.username+"</td>";
+                    html+="<td>"+user.email+"</td>";
+                    html+="</tr>";
+                }
+                document.getElementById("usersTable").innerHTML=html;
+
+                AddUserClicks();
+            }
+            function AddUserClicks(){
+                let table = document.getElementById("usersTable");
+                let rows = table.getElementsByTagName("tr");
+                for(let i=0;i<rows.length;i++){
+                    rows[i].onclick = function(){
+                        FetchPosts(jsonData[i].id);
+                    }
+                }
+            }
+            function FetchPosts(selectedUser){
+                fetch('https://jsonplaceholder.typicode.com/posts')
+                    .then(response => response.json())
+                    .then(json => RenderPosts(json,selectedUser));
+                ;
+            }
+            function RenderPosts(json,selectedUser){
+                // only from selectedUser
+                json = json.filter(function(post){
+                    return post.userId == selectedUser;
+                });
+
+                let html = "";
+                if(json){
+                    if(json.length);// more than one
+                    else json = new Array(json);// just one
+                }else{// no data
+                    html="<td colspan='4'>No posts</td>";
+                    document.getElementById("postsTable").innerHTML=html;
+                    return;
+                }
+                for(let i=0;i<json.length;i++){
+                    let post = json[i];
+                    html+="<tr>";
+                    html+="<td>"+post.userId+"</td>";
+                    html+="<td>"+post.id+"</td>";
+                    html+="<td>"+post.title+"</td>";
+                    html+="<td>"+post.body+"</td>";
+                    html+="</tr>";
+                }
+                document.getElementById("postsTable").innerHTML=html;
+            }
+            
+
+        </script>
+    </head>
+    <body onload="Initiate()">
+        <h2>Ksense Project</h2>
+        <h4>By: Kevin Karosy</h4>
+        <br>
+
+        <div id="usersCard">
+            <h4>Users</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>id</th>
+                        <th>name</th>
+                        <th>username</th>
+                        <th>email</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTable"></tbody>
+            </table>
+        </div>
+
+        <div id="postsCard">
+            <h4>Posts</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>userId</th>
+                        <th>id</th>
+                        <th>title</th>
+                        <th>body</th>
+                    </tr>
+                </thead>
+                <tbody id="postsTable"></tbody>
+            </table>
+        </div>
+
+    </body>
+</html>
