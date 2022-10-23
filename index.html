@@ -3,70 +3,79 @@
     <head>
         <title>Ksense Project</title>
         <style>
+            body{
+                background-color:lightblue;
+                line-height:1.3em;
+            }
             h1,h2,h3,h4{
                 margin-top:0;
                 margin-bottom:0;
             }
             table{
-                width:98%;
+                width:100%;
                 border-collapse:collapse;
             }
             table, td, th{
                 border: 1px solid black;
             }
+            td, th{
+                padding:0 0.3em;
+            }
             tr:nth-child(even){
-                background-color:rgba(0,0,0,0.05);
+                background-color:rgba(0,0,0,0.1);
             }
             th{
-                background-color:rgba(0,0,0,0.2);
+                background-color:rgba(0,0,0,0.25);
             }
             #usersTable tr:hover{
                 background-color:Khaki;
             }
             #usersCard, #postsCard{
                 display:inline-block;
-                width:48%;
                 vertical-align: top;
-                overflow:hidden;
+            }
+            #usersCard, #postsCard, #headerCard{
+                background-color:white;
+                margin-bottom:1em;
+                padding:10px;
+                border-radius:10px;
+            }
+            @media screen and (min-width:1100.1px){
+                #usersCard, #postsCard{
+                    width:calc(50% - 30px);
+                }
+            }
+            @media screen and (max-width:1100px){
+                #usersCard, #postsCard{
+                    width:97%;
+                }
             }
         </style>
         <script>
             "use strict";
 
-            let jsonData;
-
-            function Initiate(){
-                InitializeUsers();
-                InitializePosts();
+            function Initialize(){
+                // When page loads.
                 FetchUsers();
             }
 
-            function InitializeUsers(){
-                let html="<td colspan='4'>No users.</td>";
-                document.getElementById("usersTable").innerHTML=html;
-                return;
-            }
-            function InitializePosts(){
-                let html="<td colspan='4'>No posts. Select a user.</td>";
-                document.getElementById("postsTable").innerHTML=html;
-                return;
-            }
-
             function FetchUsers(){
+                // Fetch user data.
+                // Then call RenderUsers.
                 fetch('https://jsonplaceholder.typicode.com/users/')
                     .then(response => response.json())
                     .then(json => RenderUsers(json));
                 ;
             }
             function RenderUsers(json){
-                jsonData = json;
-
+                // Draw rows into the Users table.
+                // Then call AddUserClicks.
                 let html = "";
                 if(json){
                     if(json.length);// more than one
                     else json = new Array(json);// just one
                 }else{// no data
-                    html="<td>No users</td>";
+                    html="<td>No users.</td>";
                     document.getElementById("usersTable").innerHTML=html;
                     return;
                 }
@@ -81,25 +90,31 @@
                 }
                 document.getElementById("usersTable").innerHTML=html;
 
-                AddUserClicks();
+                AddUserClicks(json);
             }
-            function AddUserClicks(){
+            function AddUserClicks(json){
+                // Make the Users table rows clickable.
+                // Each will call FetchPosts.
                 let table = document.getElementById("usersTable");
                 let rows = table.getElementsByTagName("tr");
                 for(let i=0;i<rows.length;i++){
                     rows[i].onclick = function(){
-                        FetchPosts(jsonData[i].id);
+                        FetchPosts(json[i].id);
                     }
                 }
             }
             function FetchPosts(selectedUser){
+                // Fetch post data.
+                // Then call RenderPosts.
                 fetch('https://jsonplaceholder.typicode.com/posts')
                     .then(response => response.json())
                     .then(json => RenderPosts(json,selectedUser));
                 ;
             }
+            
             function RenderPosts(json,selectedUser){
-                // only from selectedUser
+                // Draw rows into the Posts table.
+                // Filter, show posts from selected user only.
                 json = json.filter(function(post){
                     return post.userId == selectedUser;
                 });
@@ -109,7 +124,7 @@
                     if(json.length);// more than one
                     else json = new Array(json);// just one
                 }else{// no data
-                    html="<td colspan='4'>No posts</td>";
+                    html="<td colspan='4'>No posts.</td>";
                     document.getElementById("postsTable").innerHTML=html;
                     return;
                 }
@@ -124,14 +139,13 @@
                 }
                 document.getElementById("postsTable").innerHTML=html;
             }
-            
-
         </script>
     </head>
-    <body onload="Initiate()">
-        <h2>Ksense Project</h2>
-        <h4>By: Kevin Karosy</h4>
-        <br>
+    <body onload="Initialize()">
+        <div id="headerCard">
+            <h2>Ksense Project</h2>
+            <h4>By: Kevin Karosy</h4>
+        </div>
 
         <div id="usersCard">
             <h4>Users</h4>
@@ -144,7 +158,9 @@
                         <th>email</th>
                     </tr>
                 </thead>
-                <tbody id="usersTable"></tbody>
+                <tbody id="usersTable">
+                    <td colspan='4'>No users.</td>
+                </tbody>
             </table>
         </div>
 
@@ -159,7 +175,9 @@
                         <th>body</th>
                     </tr>
                 </thead>
-                <tbody id="postsTable"></tbody>
+                <tbody id="postsTable">
+                    <td colspan='4'>No posts. Select a user.</td>
+                </tbody>
             </table>
         </div>
 
